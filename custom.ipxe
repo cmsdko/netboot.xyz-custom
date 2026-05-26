@@ -1,25 +1,32 @@
 #!ipxe
 ###
-### netboot.xyz-custom menu example
+### netboot.xyz-custom menu
 ###
 
 :custom
 clear custom_choice
-menu This is a Test Menu
-item --gap This is the first sub menu
-item proxmox_iso ${space} Loading a kernel and initrd
-item option_two ${space} Loading an ISO
-item --gap This is a second sub menu
-item option_three ${space} Loads another custom sub menu
-item option_four ${space} This is option four
+menu Кастомное меню установки
+item --gap Установка Гипервизора
+item proxmox8 ${space} Установить Proxmox VE 8 (Авто-установка)
+item --gap Остальное
+item option_two ${space} Опция 2
 choose custom_choice || goto custom_exit
 echo ${cls}
 goto ${custom_choice}
 goto custom_exit
 
-:proxmox_iso
-kernel https://boot.netboot.xyz/memdisk raw iso
-initrd https://enterprise.proxmox.com/iso/proxmox-ve_8.4-1.iso
+:proxmox8
+# Указываем базовый URL к официальным файлам сетевой загрузки Proxmox 8
+set pve_url http://download.proxmox.com/debian/dists/bookworm/pve-no-subscription/binary-amd64/
+
+# Загружаем ядро и инсталлятор в память
+kernel ${pve_url}linux ro ramdisk_size=16777216 rw quiet
+initrd ${pve_url}initrd.img
+
+# БОНУС: Если хотите полностью автоматическую установку без вопросов,
+# можно раскомментировать строку ниже и указать путь к вашему файлу ответов answer.toml:
+# imgargs linux proxmox-autoinstall=http://ваш_веб_сервер/answer.toml
+
 boot || goto custom_exit
 
 :custom_exit

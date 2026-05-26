@@ -1,34 +1,11 @@
 #!ipxe
-###
-### netboot.xyz-custom menu
-###
 
-:custom
-clear custom_choice
-menu Кастомное меню установки
-item --gap Установка Гипервизора
-item proxmox8 ${space} Установить Proxmox VE 8 (Авто-установка)
-item --gap Остальное
-item option_two ${space} Опция 2
-choose custom_choice || goto custom_exit
-echo ${cls}
-goto ${custom_choice}
-goto custom_exit
+set proxmox_version 8.4-1
+set iso_url http://download.proxmox.com/iso/proxmox-ve_${proxmox_version}.iso
+set pve_opts vga=791 video=vesafb:ywrap,mtrr ramdisk_size=16777216 rw quiet
 
-:proxmox8
-# Указываем базовый URL к официальным файлам сетевой загрузки Proxmox 8
-set pve_url http://download.proxmox.com/debian/dists/bookworm/pve-no-subscription/binary-amd64/
+kernel ${iso_url} /boot/linux26 ${pve_opts} splash=silent
+initrd ${iso_url} /boot/initrd.img
+initrd ${iso_url} /proxmox.iso
+boot
 
-# Загружаем ядро и инсталлятор в память
-kernel ${pve_url}linux ro ramdisk_size=16777216 rw quiet
-initrd ${pve_url}initrd.img
-
-# БОНУС: Если хотите полностью автоматическую установку без вопросов,
-# можно раскомментировать строку ниже и указать путь к вашему файлу ответов answer.toml:
-# imgargs linux proxmox-autoinstall=http://ваш_веб_сервер/answer.toml
-
-boot || goto custom_exit
-
-:custom_exit
-chain utils.ipxe
-exit
